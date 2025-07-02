@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Items - EzyBuy</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <!-- Google Font for EzyBuy -->
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+
+    <style>
+	.btn-custom {
+    background-color: #0056b3; /* darker blue */
+    color: white;
+    border-radius: 20px; /* nicely rounded */
+    border: none;
+	}
+
+	.btn-custom:hover {
+	    background-color: #004494; /* even darker on hover */
+	}
+
+        /* Navbar styles */
+        .navbar {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+        }
+
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+
+        .brand-name {
+            font-family: 'Pacifico', cursive;
+            font-size: 2.5rem;
+            color: white;
+        }
+
+        /* Custom styles for the card */
+        .custom-card {
+            border: 2px solid #007bff; /* Card border color */
+            border-radius: 15px; /* Rounded corners */
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .custom-card:hover {
+            transform: scale(1.05);
+        }
+
+        .card-header {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .btn-custom {
+            background-color: #28a745;
+            color: white;
+            border-radius: 20px;
+        }
+
+        .btn-custom:hover {
+            background-color: #218838;
+        }
+
+        .Items-heading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .Items-heading i {
+            margin-right: 10px;
+            color: #007bff;
+        }
+
+        .search-bar {
+          margin-bottom: 20px;
+        }
+
+        .form-control {
+          width: 70%;
+        }
+
+        .btn-primary {
+          width: 20%;
+        }
+
+        .sidebar {
+          border: 1px solid #ddd;
+          padding: 15px;
+          border-radius: 5px;
+          background-color: #f9f9f9;
+          margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar/Header -->
+    <header>
+        <nav class="navbar d-flex justify-content-between align-items-center px-4">
+            <div class="nav-left d-flex align-items-center">
+                <a href="/">Home</a>
+                <a href="{% url 'Items_list' %}">Items</a>
+            </div>
+
+            <div class="nav-center">
+                <h1 class="brand-name mb-0">EzyBuy</h1>
+            </div>
+
+            <div class="nav-right d-flex align-items-center">
+                {% if user.is_authenticated %}
+                    <span class="mr-2">Welcome, {{ user.username }}</span>
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
+                    <a href="{% url 'logout' %}">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}">Login</a>
+                    <a href="{% url 'register' %}">Register</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Sidebar for Filters -->
+            <div class="col-md-3">
+                <form method="GET" action="{% url 'Items_list' %}">
+                    <h5>Filter by Price</h5>
+                    <div class="form-group">
+                        <div><input type="checkbox" name="price_range" value="below_500" {% if "below_500" in selected_filters %}checked{% endif %}> <label>Below 500</label></div>
+                        <div><input type="checkbox" name="price_range" value="500_1500" {% if "500_1500" in selected_filters %}checked{% endif %}> <label>500 - 1500</label></div>
+                        <div><input type="checkbox" name="price_range" value="1500_5000" {% if "1500_5000" in selected_filters %}checked{% endif %}> <label>1500 - 5000</label></div>
+                        <div><input type="checkbox" name="price_range" value="5000_10000" {% if "5000_10000" in selected_filters %}checked{% endif %}> <label>5000 - 10000</label></div>
+                        <div><input type="checkbox" name="price_range" value="10000_50000" {% if "10000_50000" in selected_filters %}checked{% endif %}> <label>10000 - 50000</label></div>
+                        <div><input type="checkbox" name="price_range" value="50000_above" {% if "50000_above" in selected_filters %}checked{% endif %}> <label>50000 and above</label></div>
+                    </div>
+                    <button type="submit" class="btn btn-custom btn-block">Apply Filters</button>
+                </form>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <!-- Search Bar -->
+                <form method="GET" action="{% url 'Items_list' %}" class="d-flex mb-4">
+                    <input type="text" name="q" class="form-control mr-2" placeholder="Search items..." value="{{ query|default:'' }}" />
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+
+                <!-- Items List -->
+                <div class="row">
+                    {% for Item in Items %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 custom-card">
+                                <img src="{{ Item.image }}" class="card-img-top Item-image" alt="{{ Item.title }}" style="height: 150px;">
+                                <div class="card-body">
+                                    <h2 class="card-title">{{ Item.title }}</h2>
+                                    <p class="card-text">{{ Item.description }}</p>
+                                    <p class="card-price">Price: <strong>${{ Item.price }}</strong></p>
+                                    <a href="{% url 'Item_detail' Item.id %}" class="btn btn-custom">
+                                        <i class="fas fa-shopping-cart"></i> Buy Item
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id={{CLIENT_ID}}&currency=USD&components=buttons&enable-funding=venmo"></script>
+
+    <script>
+        // Render the PayPal button
+        window.paypal.Buttons({
+            style: {
+                shape: "rect",
+                layout: "vertical",
+                color: "blue",
+                label: "paypal",
+            },
+            createOrder: async function() {
+                try {
+                    const response = await fetch(`/Items/{{ Item.id }}/create-order/`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": '{{ csrf_token }}',
+                        },
+                        body: JSON.stringify({
+                            cart: [{ id: "{{ Item.id }}", quantity: 1 }],
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || "Could not create order.");
+                    }
+
+                    const orderData = await response.json();
+                    window.location.href = orderData.approval_url;
+                } catch (error) {
+                    console.error(error);
+                    document.getElementById("result-message").innerHTML = `Could not initiate PayPal Checkout...<br><br>${error}`;
+                }
+            },
+
+            onApprove: async function(data, actions) {
+                try {
+                    const response = await fetch(`/api/orders/${data.orderID}/capture/`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    });
+
+                    const orderData = await response.json();
+
+                    if (orderData.error) {
+                        throw new Error(orderData.error);
+                    }
+
+                    document.getElementById("result-message").innerHTML = `Transaction successful: ${orderData.id}`;
+                } catch (error) {
+                    console.error(error);
+                    document.getElementById("result-message").innerHTML = `Could not capture PayPal transaction...<br><br>${error}`;
+                }
+            }
+        }).render("#paypal-button-container");
+    </script>
+</body>
+</html>
